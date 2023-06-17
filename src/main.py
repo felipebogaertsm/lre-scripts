@@ -1,8 +1,11 @@
+import CoolProp.CoolProp as cp
+
 from services.flow import (
     total_flow,
     fuel_flow_from_of_ratio,
     oxidizer_flow_from_of_ratio,
     throat_area_from_mass_flow,
+    fuel_spray_injector_area,
 )
 from services.geometric import area_to_diameter, diameter_to_area
 from services.isentropic import (
@@ -21,6 +24,13 @@ MOLAR_MASS_PROPELLANT = 0.023  # kg/mol
 ATMOSPHERIC_PRESSURE = 101325  # Pascals
 CHAMBER_YIELD_STRENGTH = 55.2e6  # Pascals
 SAFETY_FACTOR = 3  # unitless
+INJECTOR_ORIFICE_DISCHARGE_COEFFICIENT = 0.7  # unitless
+FUEL_DENSITY = 742.9  # kg/m^3
+FUEL_PRESSURE_DROP = 0.689e6  # Pascals
+OX_PRESSURE_DROP = 0.689e6  # Pascals
+OX_VELOCITY = 61  # m/s
+OX_NAME = "Oxygen"
+AMBIENT_TEMPERATURE = 298  # Kelvin
 
 # STEP 1
 OF_RATIO = 2.5
@@ -104,3 +114,24 @@ chamber_wall_thickness = (CHAMBER_PRESSURE * chamber_diameter) / (
 )
 
 print(f"Chamber wall thickness: {chamber_wall_thickness * 1e3:.3f} mm")
+
+# STEP 14
+fuel_injector_area = fuel_spray_injector_area(
+    flow=fuel_flow,
+    orifice_discharge_coefficient=INJECTOR_ORIFICE_DISCHARGE_COEFFICIENT,
+    density=FUEL_DENSITY,
+    pressure_drop=FUEL_PRESSURE_DROP,
+)
+
+print(f"Fuel injector area: {fuel_injector_area * 1e6:.3f} mm^2")
+
+# STEP 15
+ox_pressure_at_entrance = CHAMBER_PRESSURE + OX_PRESSURE_DROP  # Pascals
+ox_density_at_entrance = cp.PropsSI(
+    "D", "P", ox_pressure_at_entrance, "T", AMBIENT_TEMPERATURE, OX_NAME
+)
+ox_injector_area = ox_flow / (ox_density_at_entrance * OX_VELOCITY)  # m^2
+
+print(f"Oxidizer pressure at entrance: {ox_pressure_at_entrance * 1e-6:.3f} MPa")
+print(f"Oxidizer density at entrance: {ox_density_at_entrance:.3f} kg/m^3")
+print(f"Oxidizer injector area: {ox_injector_area * 1e6:.3f} mm^2")

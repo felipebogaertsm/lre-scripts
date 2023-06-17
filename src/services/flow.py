@@ -104,3 +104,25 @@ def throat_area_from_mass_flow(
     return (
         mass_flow / pressure * np.sqrt(constants.R * temperature / gamma / molar_mass)
     )
+
+
+def fuel_spray_injector_area(
+    flow: float,
+    orifice_discharge_coefficient: float,
+    density: float,
+    pressure_drop: float,
+) -> float:
+    """
+    Calculates the fuel spray injector area from the mass flow rate, pressure, temperature,
+    and ratio of specific heats.
+
+    Args:
+        flow (float): The mass flow rate - constant throughout the nozzle.
+        orifice_discharge_coefficient (float): The pressure at the throat.
+        density (float): The temperature at the throat.
+        pressure_drop (float): The ratio of specific heats.
+
+    Returns:
+        float: The throat area.
+    """
+    return flow / (orifice_discharge_coefficient * np.sqrt(2 * density * pressure_drop))
