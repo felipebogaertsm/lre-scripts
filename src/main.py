@@ -4,7 +4,7 @@ from services.flow import (
     oxidizer_flow_from_of_ratio,
     throat_area_from_mass_flow,
 )
-from services.geometric import area_to_diameter
+from services.geometric import area_to_diameter, diameter_to_area
 from services.isentropic import (
     temperature_at_throat,
     pressure_at_throat,
@@ -19,70 +19,88 @@ I_SP = 260  # seconds
 GAMMA = 1.2  # unitless
 MOLAR_MASS_PROPELLANT = 0.023  # kg/mol
 ATMOSPHERIC_PRESSURE = 101325  # Pascals
+CHAMBER_YIELD_STRENGTH = 55.2e6  # Pascals
+SAFETY_FACTOR = 3  # unitless
 
 # STEP 1
 OF_RATIO = 2.5
-MASS_FLOW_TOTAL = total_flow(thrust=THRUST_DESIRED, i_sp=I_SP)  # kg/s
-FUEL_FLOW = fuel_flow_from_of_ratio(
-    of_ratio=OF_RATIO, total_flow=MASS_FLOW_TOTAL
+mass_flow_total = total_flow(thrust=THRUST_DESIRED, i_sp=I_SP)  # kg/s
+fuel_flow = fuel_flow_from_of_ratio(
+    of_ratio=OF_RATIO, total_flow=mass_flow_total
 )  # kg/s
-OX_FLOW = oxidizer_flow_from_of_ratio(
-    of_ratio=OF_RATIO, total_flow=MASS_FLOW_TOTAL
+ox_flow = oxidizer_flow_from_of_ratio(
+    of_ratio=OF_RATIO, total_flow=mass_flow_total
 )  # kg/s
 
-print(f"Total mass flow: {MASS_FLOW_TOTAL:.3f} kg/s")
-print(f"Fuel flow: {FUEL_FLOW:.3f} kg/s")
-print(f"Oxidizer flow: {OX_FLOW:.3f} kg/s")
-print(f"Oxidizer to fuel ratio: {OX_FLOW / FUEL_FLOW:.3f}")
+print(f"Total mass flow: {mass_flow_total:.3f} kg/s")
+print(f"Fuel flow: {fuel_flow:.3f} kg/s")
+print(f"Oxidizer flow: {ox_flow:.3f} kg/s")
+print(f"Oxidizer to fuel ratio: {ox_flow / fuel_flow:.3f}")
 
 # STEP 2
 CHAMBER_TEMP = 3445  # Kelvin
-GAS_TEMP_AT_THROAT = temperature_at_throat(
+gas_temp_at_throat = temperature_at_throat(
     chamber_temperature=CHAMBER_TEMP, gamma=GAMMA
 )  # Kelvin
 
 print(f"Chamber temperature: {CHAMBER_TEMP:.3f} K")
-print(f"Gas temperature at throat: {GAS_TEMP_AT_THROAT:.3f} K")
+print(f"Gas temperature at throat: {gas_temp_at_throat:.3f} K")
 
 # STEP 3
-PRESSURE_AT_THROAT = pressure_at_throat(
+pressure_at_throat = pressure_at_throat(
     chamber_pressure=CHAMBER_PRESSURE, gamma=GAMMA
 )  # Pascals
 
-print(f"Pressure at throat: {PRESSURE_AT_THROAT * 1e-6:.3f} MPa")
+print(f"Pressure at throat: {pressure_at_throat * 1e-6:.3f} MPa")
 
 # STEP 4
-THROAT_AREA = throat_area_from_mass_flow(
-    mass_flow=MASS_FLOW_TOTAL,
-    pressure=PRESSURE_AT_THROAT,
-    temperature=GAS_TEMP_AT_THROAT,
+throat_area = throat_area_from_mass_flow(
+    mass_flow=mass_flow_total,
+    pressure=pressure_at_throat,
+    temperature=gas_temp_at_throat,
     gamma=GAMMA,
     molar_mass=MOLAR_MASS_PROPELLANT,
 )  # m^2
 
-print(f"Throat area: {THROAT_AREA * 1e4:.3f} cm^2")
+print(f"Throat area: {throat_area * 1e4:.3f} cm^2")
 
 # STEP 5
-THROAT_DIAMETER = area_to_diameter(area=THROAT_AREA)  # m
+throat_diameter = area_to_diameter(area=throat_area)  # m
 
-print(f"Throat diameter: {THROAT_DIAMETER * 1e3:.3f} mm")
+print(f"Throat diameter: {throat_diameter * 1e3:.3f} mm")
 
 # STEP 6
-OPTIMAL_ER = optimal_expansion_ratio(
+optimal_er = optimal_expansion_ratio(
     chamber_pressure=CHAMBER_PRESSURE,
     atmospheric_pressure=ATMOSPHERIC_PRESSURE,
     gamma=GAMMA,
 )
-EXIT_AREA = THROAT_AREA * OPTIMAL_ER  # m^2
+exit_area = throat_area * optimal_er  # m^2
 
-print(f"Optimal expansion ratio: {OPTIMAL_ER:.3f}")
-print(f"Exit area: {EXIT_AREA * 1e4:.3f} cm^2")
+print(f"Optimal expansion ratio: {optimal_er:.3f}")
+print(f"Exit area: {exit_area * 1e4:.3f} cm^2")
 
 # STEP 7
-EXIT_DIAMETER = area_to_diameter(EXIT_AREA)  # m
-print(f"Exit diameter: {EXIT_DIAMETER * 1e3:.3f} mm")
+exit_diameter = area_to_diameter(exit_area)  # m
+print(f"Exit diameter: {exit_diameter * 1e3:.3f} mm")
 
 # STEP 8
-CHAMBER_VOLUME = L_STAR * THROAT_AREA  # m^3
+chamber_volume = L_STAR * throat_area  # m^3
 
-print(f"Chamber volume: {CHAMBER_VOLUME * 1e6:.3f} L")
+print(f"Chamber volume: {chamber_volume * 1e6:.3f} L")
+
+# STEP 9
+chamber_diameter = 5 * throat_diameter  # m
+chamber_length = chamber_volume / (
+    diameter_to_area(diameter=chamber_diameter) * 1.1
+)  # m
+
+print(f"Chamber diameter: {chamber_diameter * 1e3:.3f} mm")
+print(f"Chamber length: {chamber_length * 1e3:.3f} mm")
+
+# STEP 10
+chamber_wall_thickness = (CHAMBER_PRESSURE * chamber_diameter) / (
+    2 * CHAMBER_YIELD_STRENGTH / SAFETY_FACTOR
+)
+
+print(f"Chamber wall thickness: {chamber_wall_thickness * 1e3:.3f} mm")

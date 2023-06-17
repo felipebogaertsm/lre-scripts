@@ -12,3 +12,16 @@ def area_to_diameter(area: float) -> float:
         float: The diameter of the circle.
     """
     return 2 * math.sqrt(area / math.pi)
+
+
+def diameter_to_area(diameter: float) -> float:
+    """
+    Calculates the area of a circle from its diameter.
+
+    Args:
+        diameter (float): The diameter of the circle.
+
+    Returns:
+        float: The area of the circle.
+    """
+    return math.pi * (diameter / 2) ** 2
