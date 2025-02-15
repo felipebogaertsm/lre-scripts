@@ -1,4 +1,4 @@
-import cantera as ct
+import cantera as ct  
 from services.flow import (
     total_flow,
     fuel_flow_from_of_ratio,
@@ -124,22 +124,15 @@ fuel_injector_area = fuel_spray_injector_area(
 
 print(f"Fuel injector area: {fuel_injector_area * 1e6:.3f} mm^2")
 
-# STEP 15 - Replacing CoolProp with Cantera
-# Create an oxidizer phase using Cantera
-gas = ct.Solution("gri30.cti")  # Load standard gas-phase chemistry
-gas.TP = (
-    AMBIENT_TEMPERATURE,
-    CHAMBER_PRESSURE + OX_PRESSURE_DROP,
-)  # Set temperature & pressure
-gas.set_equivalence_ratio(phi=1.0, fuel="CH4", oxidizer=OX_NAME)  # Define oxidizer
+# STEP 15
+gas = ct.Solution("air.yaml")  # Load Cantera's air model
+gas.TP = AMBIENT_TEMPERATURE, CHAMBER_PRESSURE + OX_PRESSURE_DROP  # Set state
 
-# Get oxidizer density from Cantera
+gas.X = {OX_NAME: 1.0} # pure O₂ as the only component using mole fractions
+
 ox_density_at_entrance = gas.density
-
 ox_injector_area = ox_flow / (ox_density_at_entrance * OX_VELOCITY)  # m^2
 
-print(
-    f"Oxidizer pressure at entrance: {(CHAMBER_PRESSURE + OX_PRESSURE_DROP) * 1e-6:.3f} MPa"
-)
+print(f"Oxidizer pressure at entrance: {(CHAMBER_PRESSURE + OX_PRESSURE_DROP) * 1e-6:.3f} MPa")
 print(f"Oxidizer density at entrance: {ox_density_at_entrance:.3f} kg/m^3")
 print(f"Oxidizer injector area: {ox_injector_area * 1e6:.3f} mm^2")
