@@ -1,4 +1,12 @@
-import cantera as ct  
+"""
+Design calculations for a liquid rocket engine.
+
+References:
+https://spacha.github.io/How-to-Rocket/
+Accessed at 2025-02-15 15:34Z
+"""
+
+import cantera as ct
 from services.flow import (
     total_flow,
     fuel_flow_from_of_ratio,
@@ -128,11 +136,13 @@ print(f"Fuel injector area: {fuel_injector_area * 1e6:.4f} mm^2")
 gas = ct.Solution("air.yaml")  # Load Cantera's air model
 gas.TP = AMBIENT_TEMPERATURE, CHAMBER_PRESSURE + OX_PRESSURE_DROP  # Set state
 
-gas.X = {OX_NAME: 1.0} # pure O₂ as the only component using mole fractions
+gas.X = {OX_NAME: 1.0}  # pure O₂ as the only component using mole fractions
 
 ox_density_at_entrance = gas.density
 ox_injector_area = ox_flow / (ox_density_at_entrance * OX_VELOCITY)  # m^2
 
-print(f"Oxidizer pressure at entrance: {(CHAMBER_PRESSURE + OX_PRESSURE_DROP) * 1e-6:.4f} MPa")
+print(
+    f"Oxidizer pressure at entrance: {(CHAMBER_PRESSURE + OX_PRESSURE_DROP) * 1e-6:.4f} MPa"
+)
 print(f"Oxidizer density at entrance: {ox_density_at_entrance:.4f} kg/m^3")
 print(f"Oxidizer injector area: {ox_injector_area * 1e6:.4f} mm^2")
