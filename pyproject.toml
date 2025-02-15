@@ -1,0 +1,19 @@
+[project]
+name = "lre-scripts"
+version = "0.1.0"
+description = "Liquid rocket engine design scripts"
+authors = [
+    {name = "Felipe Bogaerts de Mattos",email = "me@felipebm.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "coolprop (>=6.6.0,<7.0.0)",
+    "numpy (>=2.2.3,<3.0.0)",
+    "scipy (>=1.15.1,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
