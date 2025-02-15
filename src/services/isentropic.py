@@ -1,5 +1,3 @@
-
-
 def temperature_at_throat(chamber_temperature: float, gamma: float) -> float:
     """Returns the temperature at the nozzle throat.
 

@@ -6,11 +6,11 @@ authors = [
     {name = "Felipe Bogaerts de Mattos",email = "me@felipebm.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.13,<3.14"
 dependencies = [
-    "coolprop (>=6.6.0,<7.0.0)",
     "numpy (>=2.2.3,<3.0.0)",
-    "scipy (>=1.15.1,<2.0.0)"
+    "scipy (>=1.15.1,<2.0.0)",
+    "cantera (>=3.1.0,<4.0.0)"
 ]
 
 

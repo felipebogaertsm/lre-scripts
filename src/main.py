@@ -1,5 +1,4 @@
-import CoolProp.CoolProp as cp
-
+import cantera as ct
 from services.flow import (
     total_flow,
     fuel_flow_from_of_ratio,
@@ -29,7 +28,7 @@ FUEL_DENSITY = 742.9  # kg/m^3
 FUEL_PRESSURE_DROP = 0.689e6  # Pascals
 OX_PRESSURE_DROP = 0.689e6  # Pascals
 OX_VELOCITY = 61  # m/s
-OX_NAME = "Oxygen"
+OX_NAME = "O2"  # Oxygen
 AMBIENT_TEMPERATURE = 298  # Kelvin
 
 # STEP 1
@@ -125,13 +124,22 @@ fuel_injector_area = fuel_spray_injector_area(
 
 print(f"Fuel injector area: {fuel_injector_area * 1e6:.3f} mm^2")
 
-# STEP 15
-ox_pressure_at_entrance = CHAMBER_PRESSURE + OX_PRESSURE_DROP  # Pascals
-ox_density_at_entrance = cp.PropsSI(
-    "D", "P", ox_pressure_at_entrance, "T", AMBIENT_TEMPERATURE, OX_NAME
-)
+# STEP 15 - Replacing CoolProp with Cantera
+# Create an oxidizer phase using Cantera
+gas = ct.Solution("gri30.cti")  # Load standard gas-phase chemistry
+gas.TP = (
+    AMBIENT_TEMPERATURE,
+    CHAMBER_PRESSURE + OX_PRESSURE_DROP,
+)  # Set temperature & pressure
+gas.set_equivalence_ratio(phi=1.0, fuel="CH4", oxidizer=OX_NAME)  # Define oxidizer
+
+# Get oxidizer density from Cantera
+ox_density_at_entrance = gas.density
+
 ox_injector_area = ox_flow / (ox_density_at_entrance * OX_VELOCITY)  # m^2
 
-print(f"Oxidizer pressure at entrance: {ox_pressure_at_entrance * 1e-6:.3f} MPa")
+print(
+    f"Oxidizer pressure at entrance: {(CHAMBER_PRESSURE + OX_PRESSURE_DROP) * 1e-6:.3f} MPa"
+)
 print(f"Oxidizer density at entrance: {ox_density_at_entrance:.3f} kg/m^3")
 print(f"Oxidizer injector area: {ox_injector_area * 1e6:.3f} mm^2")
