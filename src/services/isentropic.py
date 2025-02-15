@@ -1,5 +1,3 @@
-import math
-import numpy as np
 
 
 def temperature_at_throat(chamber_temperature: float, gamma: float) -> float:
