@@ -10,10 +10,16 @@ requires-python = ">=3.13,<3.14"
 dependencies = [
     "numpy (>=2.2.3,<3.0.0)",
     "scipy (>=1.15.1,<2.0.0)",
-    "cantera (>=3.1.0,<4.0.0)"
+    "cantera (>=3.1.0,<4.0.0)",
+    "pydantic (>=2.10.6,<3.0.0)"
 ]
-
+packages = [
+    { include = "services", from = "src" }
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff.lint]
+extend-select = ["I"]
