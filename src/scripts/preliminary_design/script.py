@@ -28,28 +28,28 @@ def main() -> None:
     """Main function to execute design calculations for a liquid rocket engine."""
 
     # Auto-load inputs dynamically for this script
-    inputs = load_inputs("design_calculations")
+    inputs = load_inputs("preliminary_design")
 
     # STEP 1 - Compute Mass Flow Rates
-    mass_flow_total = total_flow(thrust=inputs.thrust_desired, i_sp=inputs.i_sp)  # kg/s
+    mass_flow_total = total_flow(thrust=inputs.thrust_desired, i_sp=inputs.isp)  # kg/s
     fuel_flow = fuel_flow_from_of_ratio(
         of_ratio=inputs.of_ratio, total_flow=mass_flow_total
     )
-    ox_flow = oxidizer_flow_from_of_ratio(
+    oxidizer_flow = oxidizer_flow_from_of_ratio(
         of_ratio=inputs.of_ratio, total_flow=mass_flow_total
     )
 
     print(f"Total mass flow: {mass_flow_total:.4f} kg/s")
     print(f"Fuel flow: {fuel_flow:.4f} kg/s")
-    print(f"Oxidizer flow: {ox_flow:.4f} kg/s")
-    print(f"Oxidizer to fuel ratio: {ox_flow / fuel_flow:.4f}")
+    print(f"Oxidizer flow: {oxidizer_flow:.4f} kg/s")
+    print(f"Oxidizer to fuel ratio: {oxidizer_flow / fuel_flow:.4f}")
 
     # STEP 2 - Compute Gas Properties at the Throat
     gas_temp_at_throat = temperature_at_throat(
-        chamber_temperature=inputs.chamber_temp, gamma=inputs.gamma
+        chamber_temperature=inputs.chamber_temperature, gamma=inputs.gamma
     )
 
-    print(f"Chamber temperature: {inputs.chamber_temp:.4f} K")
+    print(f"Chamber temperature: {inputs.chamber_temperature:.4f} K")
     print(f"Gas temperature at throat: {gas_temp_at_throat:.4f} K")
 
     # STEP 3 - Compute Pressure at the Throat
@@ -125,18 +125,20 @@ def main() -> None:
     gas = ct.Solution("air.yaml")
     gas.TP = (
         inputs.ambient_temperature,
-        inputs.chamber_pressure + inputs.ox_pressure_drop,
+        inputs.chamber_pressure + inputs.oxidizer_pressure_drop,
     )
-    gas.X = {inputs.ox_name: 1.0}  # Define pure oxidizer composition
+    gas.X = {inputs.oxidizer_name: 1.0}  # Define pure oxidizer composition
 
-    ox_density_at_entrance = gas.density
-    ox_injector_area = ox_flow / (ox_density_at_entrance * inputs.ox_velocity)
+    oxidizer_density_at_entrance = gas.density
+    oxidizer_injector_area = oxidizer_flow / (
+        oxidizer_density_at_entrance * inputs.oxidizer_velocity
+    )
 
     print(
-        f"Oxidizer pressure at entrance: {(inputs.chamber_pressure + inputs.ox_pressure_drop) * 1e-6:.4f} MPa"
+        f"Oxidizer pressure at entrance: {(inputs.chamber_pressure + inputs.oxidizer_pressure_drop) * 1e-6:.4f} MPa"
     )
-    print(f"Oxidizer density at entrance: {ox_density_at_entrance:.4f} kg/m^3")
-    print(f"Oxidizer injector area: {ox_injector_area * 1e6:.4f} mm^2")
+    print(f"Oxidizer density at entrance: {oxidizer_density_at_entrance:.4f} kg/m^3")
+    print(f"Oxidizer injector area: {oxidizer_injector_area * 1e6:.4f} mm^2")
 
 
 if __name__ == "__main__":
